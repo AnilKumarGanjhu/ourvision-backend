@@ -1,0 +1,103 @@
+server:
+  port: 8080
+  tomcat:
+    max-swallow-size: -1
+    connection-timeout: 300000
+
+spring:
+  application:
+    name: our-vision
+
+  autoconfigure:
+    exclude:
+      - org.springframework.boot.autoconfigure.security.servlet.UserDetailsServiceAutoConfiguration
+
+  servlet:
+    multipart:
+      max-file-size: 100MB
+      max-request-size: 100MB
+
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://ep-round-frost-b4drx8go-pooler.c-6.us-east-2.aws.neon.tech/neondb?sslmode=require&channel_binding=require}
+    username: ${DB_USERNAME:neondb_owner}
+    password: ${DB_PASSWORD:npg_us41tLvodlXB}
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: 5
+      minimum-idle: 2
+      connection-timeout: 30000
+      idle-timeout: 60000
+      max-lifetime: 180000
+      keepalive-time: 60000
+      leak-detection-threshold: 60000
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    open-in-view: false
+    properties:
+      hibernate:
+        format_sql: true
+
+  flyway:
+    enabled: true
+    baseline-on-migrate: true
+    url: ${DB_URL:jdbc:postgresql://ep-round-frost-b4drx8go-pooler.c-6.us-east-2.aws.neon.tech/neondb?sslmode=require&channel_binding=require}
+    user: ${DB_USERNAME:neondb_owner}
+    password: ${DB_PASSWORD:npg_us41tLvodlXB}
+
+  jackson:
+    default-property-inclusion: non_null
+
+app:
+  # Member photos are stored in this folder. Set UPLOAD_DIR to an absolute path in production.
+  upload-dir: ${UPLOAD_DIR:uploads}
+
+  # Existing local-filesystem migration (legacy). Keep false when preparing Drive migration.
+  migrate-images: ${MIGRATE_IMAGES:false}
+
+  # Google Drive integration is staged separately; do not enable until OAuth setup and
+  # the Drive-backed image adapter have been implemented and tested.
+  google-drive:
+    enabled: ${GOOGLE_DRIVE_ENABLED:false}
+    client-id: ${GOOGLE_CLIENT_ID:1071766394046-jsfl8sn2fmga4kl3etipee67s93pthke.apps.googleusercontent.com}
+    client-secret: ${GOOGLE_CLIENT_SECRET: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}
+    redirect-uri: ${GOOGLE_REDIRECT_URI:http://localhost:8080/api/google-drive/callback}
+    root-folder-id: ${GOOGLE_DRIVE_ROOT_FOLDER_ID:https://drive.google.com/drive/folders/1jX6uLCIUE2hEBysNrq1lkQ6ePYQ3mUZ2}
+    token-encryption-key: ${GOOGLE_TOKEN_ENCRYPTION_KEY:fVe92JQIDN1ziq9lgNunvIAdJHcRz6G16pUYc7evhw8=}
+
+  jwt:
+    secret: ${JWT_SECRET:ciO3u99zJmNRsd7+/gJ52uKpE6+UhGCZFO0Woi4ihik=}
+    expiration-ms: ${JWT_EXPIRATION_MS:86400000}
+
+# Chatbot: database first, Gemini as fallback (Gemini is called from the backend only).
+# Set GEMINI_API_KEY as an environment variable - never commit it.
+chatbot:
+  match-threshold: ${CHATBOT_MATCH_THRESHOLD:0.65}   # 0..1, higher = stricter database matching
+  history-max-turns: ${CHATBOT_HISTORY_MAX_TURNS:6}  # earlier messages sent to Gemini for follow-ups
+  rate-limit:
+    max-requests: ${CHATBOT_RATE_LIMIT_MAX:20}       # per client IP per window; 0 disables
+    window-seconds: ${CHATBOT_RATE_LIMIT_WINDOW:60}
+    trust-forwarded-header: ${CHATBOT_TRUST_FORWARDED_HEADER:false}  # true only behind a trusted reverse proxy
+  gemini:
+    enabled: ${GEMINI_ENABLED:true}
+    api-key: ${GEMINI_API_KEY:AQ.Ab8RN6I0-8ZECRmjyEb4I-UhqQHwdWEaYwIitLQ6X5_4EZ6ckA}
+    # Tried in order; the next model is used when one is busy, over quota or unavailable.
+    models: ${GEMINI_MODELS:gemini-3.8-flash,gemini-3.5-flash,gemini-3.5-flash-lite}
+    temperature: ${GEMINI_TEMPERATURE:0.7}
+    max-output-tokens: ${GEMINI_MAX_OUTPUT_TOKENS:2048}
+    request-timeout-seconds: ${GEMINI_REQUEST_TIMEOUT_SECONDS:15}
+    total-timeout-seconds: ${GEMINI_TOTAL_TIMEOUT_SECONDS:25}
+    system-prompt: ${GEMINI_SYSTEM_PROMPT:}            # empty = built-in default prompt
+
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+
+# Automatic file optimization (optional engines must be installed on the server).
+file:
+  compression:
+    image-quality: ${FILE_COMPRESSION_IMAGE_QUALITY:0.85}
+    process-timeout-seconds: ${FILE_COMPRESSION_TIMEOUT_SECONDS:120}
+    qpdf-command: ${QPDF_COMMAND:qpdf}
+    ffmpeg-command: ${FFMPEG_COMMAND:ffmpeg}

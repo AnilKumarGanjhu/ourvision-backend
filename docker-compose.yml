@@ -1,0 +1,25 @@
+services:
+  postgres:
+    image: postgres:16
+    environment:
+      POSTGRES_DB: ourvision_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - ourvision_data:/var/lib/postgresql/data
+  backend:
+    build: .
+    environment:
+      DB_URL: jdbc:postgresql://postgres:5432/ourvision_db
+      DB_USERNAME: postgres
+      DB_PASSWORD: postgres
+      JWT_SECRET: replace-this-with-a-random-secret-of-at-least-32-bytes
+      GEMINI_API_KEY: ${GEMINI_API_KEY:-}
+    ports:
+      - "8080:8080"
+    depends_on:
+      - postgres
+volumes:
+  ourvision_data:

@@ -1,0 +1,14 @@
+target/
+uploads/
+.env
+.idea/
+*.iml
+
+# Uploaded files and OAuth secrets
+uploads/
+tokens/
+credentials.json
+client_secret*.json
+.env
+*.p12
+*.jks

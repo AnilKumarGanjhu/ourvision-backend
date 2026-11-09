@@ -1,0 +1,120 @@
+CREATE TABLE roles (
+  id BIGSERIAL PRIMARY KEY,
+  name VARCHAR(50) NOT NULL UNIQUE
+);
+CREATE TABLE users (
+  id BIGSERIAL PRIMARY KEY,
+  full_name VARCHAR(150) NOT NULL,
+  email VARCHAR(150) NOT NULL UNIQUE,
+  phone VARCHAR(25),
+  password VARCHAR(255) NOT NULL,
+  avatar VARCHAR(500),
+  status VARCHAR(20) NOT NULL DEFAULT 'ACTIVE',
+  role_id BIGINT NOT NULL REFERENCES roles(id),
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+CREATE TABLE member_profiles (
+  id BIGSERIAL PRIMARY KEY,
+  user_id BIGINT NOT NULL UNIQUE REFERENCES users(id) ON DELETE CASCADE,
+  address TEXT,
+  aadhaar_encrypted TEXT,
+  join_date DATE,
+  occupation VARCHAR(100),
+  blood_group VARCHAR(10)
+);
+CREATE TABLE office_bearers (
+  id BIGSERIAL PRIMARY KEY,
+  user_id BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  designation VARCHAR(120),
+  tenure_start DATE,
+  tenure_end DATE
+);
+CREATE TABLE contributions (
+  id BIGSERIAL PRIMARY KEY,
+  user_id BIGINT NOT NULL REFERENCES users(id),
+  amount NUMERIC(12,2) NOT NULL,
+  contribution_month VARCHAR(20) NOT NULL,
+  payment_mode VARCHAR(20) NOT NULL,
+  receipt_no VARCHAR(50) UNIQUE,
+  is_late BOOLEAN NOT NULL DEFAULT FALSE,
+  fine_amount NUMERIC(12,2) NOT NULL DEFAULT 0,
+  paid_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+CREATE TABLE meetings (
+  id BIGSERIAL PRIMARY KEY,
+  title VARCHAR(200) NOT NULL,
+  meeting_date DATE NOT NULL,
+  meeting_time TIME,
+  venue VARCHAR(255),
+  description TEXT
+);
+CREATE TABLE meeting_attendance (
+  id BIGSERIAL PRIMARY KEY,
+  meeting_id BIGINT NOT NULL REFERENCES meetings(id) ON DELETE CASCADE,
+  user_id BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  status VARCHAR(30) NOT NULL DEFAULT 'PRESENT',
+  UNIQUE(meeting_id,user_id)
+);
+CREATE TABLE events (
+  id BIGSERIAL PRIMARY KEY,
+  title VARCHAR(200) NOT NULL,
+  event_date DATE NOT NULL,
+  venue VARCHAR(255),
+  description TEXT,
+  banner_url TEXT
+);
+CREATE TABLE posts (
+  id BIGSERIAL PRIMARY KEY,
+  title VARCHAR(200) NOT NULL,
+  content TEXT NOT NULL,
+  image_url TEXT,
+  media_url TEXT,
+  created_by BIGINT REFERENCES users(id),
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+CREATE TABLE programs (
+  id BIGSERIAL PRIMARY KEY,
+  name VARCHAR(200) NOT NULL,
+  description TEXT,
+  start_date DATE,
+  status VARCHAR(50) DEFAULT 'PLANNED'
+);
+CREATE TABLE motives (
+  id BIGSERIAL PRIMARY KEY,
+  title VARCHAR(200) NOT NULL,
+  description TEXT
+);
+CREATE TABLE business_ideas (
+  id BIGSERIAL PRIMARY KEY,
+  title VARCHAR(200) NOT NULL,
+  description TEXT,
+  submitted_by BIGINT REFERENCES users(id),
+  status VARCHAR(30) NOT NULL DEFAULT 'PENDING',
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+CREATE TABLE suggestions_comments (
+  id BIGSERIAL PRIMARY KEY,
+  user_id BIGINT REFERENCES users(id),
+  message TEXT NOT NULL,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  status VARCHAR(30) NOT NULL DEFAULT 'OPEN'
+);
+CREATE TABLE terms_conditions (
+  id BIGSERIAL PRIMARY KEY,
+  content TEXT NOT NULL,
+  version VARCHAR(20) NOT NULL,
+  updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+CREATE TABLE notifications (
+  id BIGSERIAL PRIMARY KEY,
+  user_id BIGINT REFERENCES users(id) ON DELETE CASCADE,
+  message TEXT NOT NULL,
+  type VARCHAR(50) NOT NULL DEFAULT 'INFO',
+  read_status BOOLEAN NOT NULL DEFAULT FALSE,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+CREATE TABLE settings (
+  id BIGSERIAL PRIMARY KEY,
+  setting_key VARCHAR(150) NOT NULL UNIQUE,
+  setting_value TEXT
+);
