@@ -1,9 +1,11 @@
 package com.ourvision.config;
 
+import java.util.Arrays;
 import java.util.List;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -18,14 +20,18 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import com.ourvision.security.JwtAuthFilter;
 
+
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
 
 	private final JwtAuthFilter jwtAuthFilter;
+	private final String allowedOrigins;
 
-	public SecurityConfig(JwtAuthFilter jwtAuthFilter) {
+	public SecurityConfig(JwtAuthFilter jwtAuthFilter,
+			@Value("${app.cors.allowed-origins:http://localhost:5173,http://localhost:5174,https://ourvision-frontend.onrender.com}") String allowedOrigins) {
 		this.jwtAuthFilter = jwtAuthFilter;
+		this.allowedOrigins = allowedOrigins;
 	}
 
 	@Bean
@@ -45,7 +51,7 @@ public class SecurityConfig {
 						// Public uploads
 						.requestMatchers("/uploads/**").permitAll()
 
-						// Member Information photo - ADMIN only
+						// Member Information photo - ADMIN only CorsConfig 
 						// .requestMatchers(HttpMethod.GET,
 						// "/api/users/*/information/photo").hasRole("ADMIN")
 						.requestMatchers(HttpMethod.GET, "/api/users/*/image", "/api/users/*/information/photo")
@@ -106,31 +112,27 @@ public class SecurityConfig {
 		return new BCryptPasswordEncoder();
 	}
 
-@Bean
-public CorsConfigurationSource corsConfigurationSource() {
+	@Bean
+	public CorsConfigurationSource corsConfigurationSource() {
 
-    CorsConfiguration configuration = new CorsConfiguration();
+		CorsConfiguration configuration = new CorsConfiguration();
 
-    configuration.setAllowedOrigins(List.of(
-            "http://localhost:5173",
-            "http://localhost:5174",
-            "https://ourvision-frontend.onrender.com"
-    ));
+		List<String> origins = Arrays.stream(allowedOrigins.split(","))
+				.map(String::trim)
+				.filter(origin -> !origin.isEmpty())
+				.toList();
+		configuration.setAllowedOrigins(origins);
 
-    configuration.setAllowedMethods(List.of(
-            "GET", "POST", "PUT", "PATCH",
-            "DELETE", "OPTIONS"
-    ));
+		configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
 
-    configuration.setAllowedHeaders(List.of("*"));
+		configuration.setAllowedHeaders(List.of("*"));
+		configuration.setAllowCredentials(true);
+		configuration.setMaxAge(3600L);
 
-    configuration.setAllowCredentials(true);
+		UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
 
-    UrlBasedCorsConfigurationSource source =
-            new UrlBasedCorsConfigurationSource();
+		source.registerCorsConfiguration("/**", configuration);
 
-    source.registerCorsConfiguration("/**", configuration);
-
-    return source;
-}
+		return source;
+	}
 }
