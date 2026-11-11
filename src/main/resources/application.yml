@@ -85,7 +85,7 @@ chatbot:
     trust-forwarded-header: ${CHATBOT_TRUST_FORWARDED_HEADER:false}  # true only behind a trusted reverse proxy
   gemini:
     enabled: ${GEMINI_ENABLED:true}
-    api-key: ${GEMINI_API_KEY:AQ.Ab8RN6I-M9ywJrSzSr_bXpdTpCGQ68WUXJRO8qxj6YXRGVV8oQ}
+    api-key: ${GEMINI_API_KEY:AQ.Ab8RN6LUvpK2g8RfNq4zxuJXZnq2xNGIZH_Sv-dhEwC0A0q0sA}
     # Tried in order; the next model is used when one is busy, over quota or unavailable.
     # Valid stable/alias model codes from the Gemini API model list.
     models: ${GEMINI_MODELS:gemini-3.8-flash,gemini-3.5-flash,gemini-3.5-flash-lite}
